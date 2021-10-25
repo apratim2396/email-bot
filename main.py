@@ -1,66 +1,88 @@
+import pyttsx3
 import smtplib
 import speech_recognition as sr
-import pyttsx3
-from email.message import EmailMessage
 
-listener = sr.Recognizer()
+from email.message import EmailMessage    #accessing message bodies, and for creating or modifying structured  messages.
+
+
+listener = sr.Recognizer()  #To recognise whatsoever we are saying
 engine = pyttsx3.init()
 
 
 def talk(text):
-    engine.say(text)
-    engine.runAndWait()
+    engine.say(text)        #To Make engine speak texts
+    engine.runAndWait()     #To make this Execute and then wait
 
 
 def get_info():
     try:
         with sr.Microphone() as source:
             print('listening...')
-            voice = listener.listen(source)
-            info = listener.recognize_google(voice)
+            listener.adjust_for_ambient_noise(source)
+            #listener.dynamic_energy_threshold = False
+            voice = listener.listen(source, phrase_time_limit=7, timeout=8)
+            print("**DONE**")
+            info = listener.recognize_google(voice)    #Google API to convert voice to text
             print(info)
             return info.lower()
     except:
-        pass
+        print('Try Again')
+
+
+email_list = {
+    'name1': 'email1@xyz.com',
+    'name2': 'email2@xyz.com',
+    'name3': 'email3@xyz.com',
+    'name4': 'email4@xyz.com',
+    'name5': 'email5@xyz.com',
+}
 
 
 def send_email(receiver, subject, message):
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    # Make sure to give app access in your Google account
-    server.login('Sender_Email', 'Sender_Email_password')
+    server = smtplib.SMTP('smtp.gmail.com', 587)    #Providing server name and THE port number on which it will work
+    server.starttls()                               #turn an insecure connection into a secure one
+    server.login('your email address', 'user pass')
     email = EmailMessage()
-    email['From'] = 'Sender_Email'
+    email['From'] = 'your email'
     email['To'] = receiver
     email['Subject'] = subject
     email.set_content(message)
     server.send_message(email)
 
 
-email_list = {
-    'dude': 'COOL_DUDE_EMAIL',
-    'bts': 'diamond@bts.com',
-    'pink': 'jennie@blackpink.com',
-    'lisa': 'lisa@blackpink.com',
-    'irene': 'irene@redvelvet.com'
-}
-
-
 def get_email_info():
+    talk('Welcome sir I know you are here to send an email So Now Please tell me')
     talk('To Whom you want to send email')
     name = get_info()
     receiver = email_list[name]
     print(receiver)
+    talk('is the reciever name present in the list')
+    reclist = get_info()
+    if 'no' in reclist:
+        name = get_info()
+    else:
+        receiver = email_list[name]    
     talk('What is the subject of your email?')
     subject = get_info()
+    talk('is the subject correct ?')
+    subrit = get_info()
+    if 'no' in subrit:
+        subject = get_info()
+    else:
+        talk('Ok')
     talk('Tell me the text in your email')
     message = get_info()
+    talk('is the printed text is what you want to send ?')
+    messrit = get_info()
+    if 'no' in messrit:
+        message = get_info()
+    else:
+        talk('ok')
     send_email(receiver, subject, message)
-    talk('Hey lazy ass. Your email is sent')
+    talk('Hey! Your email is sent')
     talk('Do you want to send more email?')
     send_more = get_info()
     if 'yes' in send_more:
         get_email_info()
-
 
 get_email_info()
